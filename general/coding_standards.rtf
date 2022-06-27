@@ -1,0 +1,148 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang1033{\fonttbl{\f0\fnil\fcharset0 Arial;}}
+{\*\generator Riched20 10.0.22000}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\fs32\lang9 CODING STANDARDS\fs22\par
+\par
+\fs24 CLASSES\fs22\par
+\ul Abstract Data Types (ADT)\ulnone\par
+Always use the highest level of abstraction\par
+e.g createTodo() as opposed to addToList()\par
+Hide implementation details\par
+E.g suppose you have an insurance rates table thats so big its always stored on disk, you might refer to it as a \ldblquote rates file\rdblquote  and create access routines such as RateFile.read(). When you refer to it as file however, you\rquote re exposing more information about the data than you need to.\par
+Each class should implement one, and only one ADT\par
+Inconsistent interface:\par
+class EmployeeCensus: public ListContainer \{\par
+    void addEmployee(Employee employee);\tab\tab // employee level\par
+    void removeEmployee(Employee employee);\tab // employee level\par
+\par
+    Employee nextItemInList();\tab\tab\tab\tab // list level\par
+    Employee firstItem();\tab\tab\tab\tab // list level\par
+    Employee lastItem();\tab\tab\tab\tab // list level\par
+\}\par
+\par
+// This class is representing 2 ADTs: an Employee and a ListContainer.\par
+// Before extending an implementation class like ListContainer, ask yourself whether the interface that a container class uses should be part of the abstraction. Usually that\rquote s an implementation detail that should be hidden from the rest of the program, like this:\par
+\par
+Consistent interface\par
+class EmployeeCensus \{\par
+public:\par
+    void addEmployee(Employee employee);\par
+    void removeEmployee(Employee employee);\par
+\par
+    Employee nextEmployee();\par
+    Employee firstEmployee();\par
+    Employee lastEmployee();\par
+\par
+private:\par
+    ListContainer m_EmployeeList;\tab\tab // hidden from public interface\par
+\}\par
+\par
+\par
+\ul Polymorphism\ulnone\par
+Example\par
+switch(shape.type) \{\par
+    case Shape.CIRCLE:\par
+        shape.drawCircle();\par
+        break;\par
+    case Shape.SQUARE:\par
+        shape.drawSquare();\par
+        break;\par
+    \'85\par
+\}\par
+\par
+// In this example, methods should be replaced by a single routine name draw(), e.g circle.draw(), square.draw(), \'85\par
+// However, this is not relevant if the objects or behavior are truly different.\par
+\par
+\ul Relationships\ulnone\par
+In OOP there are many different types of relationships that can exist between 2 or more classes. The most common are:\par
+Inheritance - \ldblquote is a\rdblquote  relationship\par
+Association - \ldblquote has a\rdblquote  relationship\par
+Association:\par
+E.g; a car has an engine, and has a wheel, a person has an arm, and has a leg\par
+2 sub types:\par
+Containment (AKA aggregation)\par
+Composition\par
+Composition implies that the contained class cannot exist independently of the container, e.g\par
+class Book \{\par
+    Page page1 = new Page(\ldblquote page 1 contents\rdblquote );\par
+    Page page2 = new Page(\ldblquote page 2 contents\rdblquote );\par
+\}\par
+// If I create an instance of Book, and then destroy it, then the Pages are also destroyed\par
+With containment (or aggregation), the child can exist independently, e.g\par
+Page page1 = new Page(\ldblquote contents\rdblquote );\par
+Book book = new Book();\par
+book.addPage(page1);\par
+// If I destroy Book, Page still exists\par
+Inheritance vs containment?\par
+If multiple classes share common data but not behavior, create a common object that those classes can contain\par
+If multiple classes share common behavior but not data, derive them from a common base class that defines the common routines\par
+If multiple classes share common data and behavior, inherit from a common base class that defines the common data and routines\par
+Inherit when you want the base class to control your interface; contain when you want to control your interface\par
+\par
+\ul Naming\ulnone\par
+Class names should have noun or noun phrase names like Customer, WikiPage, Account.\par
+Avoid words like Manager, Processor, Data in the name of a class. A class name should not be a verb!\par
+Method names should have verb or verb phrase names like postPayment, deletePage, save\par
+Accessors, mutators and predicates should be named for their value and prefixed with get, set and is\par
+If we cannot derive a concise name for a class, then it\rquote s likely too large.\par
+\par
+\ul Cohesion\ulnone\par
+Classes should have a small number of properties\par
+Each of the methods of a class should use one or more of these properties\par
+In general, the more properties a method manipulates, the more cohesive that method is to its class\par
+A class in which each property is used by each method is maximally cohesive\par
+Maintaining cohesion results in many small classes (which is what we want!)\par
+\par
+\fs24 FUNCTIONS\fs22\par
+\ul Arguments\ulnone\par
+Flag arguments\par
+Passing a boolean into a function is a terrible practice. It immediately complicates the signature of the method, loudly proclaiming that this function does more than one thing. It does one thing if the flag is true, and another if false.\par
+render(boolean isSuite);\par
+render(true); // confusing\par
+\par
+// This should become 2 functions:\par
+renderForSuite();\par
+renderForSingleTest();\par
+\par
+Function name and arguments should form a nice verb/noun pair, e.g write(name)\par
+Do not pass null as an argument!\par
+\par
+\ul Returns\ulnone\par
+Do not return null! If you are tempted to return null from a function, consider throwing an exception or returning a default value instead\par
+\par
+\ul Error handling\ulnone\par
+Error handling is ONE thing! And functions should only do ONE thing! Thus a function that handles errors should do nothing else. That implies that if the keyword try exists in a function, it should be the very first word and there should be nothing after the catch/finally.\par
+\par
+\par
+\fs24 STATEMENTS\fs22\par
+Statements that must be in a specific order:\par
+const data = readData();\par
+const results = calcResults(data);\par
+\par
+// In this example it\rquote s obvious what dependencies are required. The second statement depends on the first.\par
+\par
+// The following is not so obvious\par
+revenue.computeMonthly();\par
+revenue.computeQuarterly();\par
+revenue.computeAnnual();\par
+\par
+// suppose computeMonthly initialises the data structure that all the other routines put their data into, in such case it needs to be called before the other routines. Also, it could be that before we computeQuarterly, that computeMonthly has to be done first, and before we computeAnnual, computeQuarterly must first be done. It is not so obvious!\par
+Organise code so that dependencies are obvious! Either by taking an argument or by splitting into further routines; e.g if computeMonthly initialises the data structure, then this should be its own routine initialiseData();\par
+Use routine parameters to make dependencies obvious:\par
+let expenseData = initialiseData();\par
+expenseData = computeMonthly(expenseData);\par
+expenseData = computeQuarterly(expenseData);\par
+expenseData = computeAnnual(expenseData);\par
+\par
+\fs24 PERFORMANCE\fs22\par
+If your aim is to improve performance, then make sure you confirm performance increase by measuring it! Do not assume that something will improve performance. Perhaps compilers already optimise in those areas! Readability and maintainability are generally more important.\par
+Loops -> In nested loops, if you can, put the busiest loop on the inside, e.g\par
+for (column = 0; column < 100; column++) \{\par
+    for (row = 0; row < 5; row++) \{\par
+        sum += table[row][column];\par
+    \}\par
+\}\par
+// outer loop runs 100 times (plus), inner loop runs 5 * 100 times = 600\par
+// by switching - outer loop runs 5 times (plus), inner loop runs 5 * 100 times = 505\par
+\par
+}
+ 
