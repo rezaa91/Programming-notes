@@ -212,8 +212,47 @@ class UploadAvatar {
 * Low in coupling and high in cohesion
 * Dependency Inversion Principle (DIP) - High level modules should depend on abstractions (interfaces), not low level concrete implementations
 * Avoid leaky abstractions - where abstraction fails to hide complex, underlying details, forcing users to understand the implementation.
+* Code is either an internal implementation detail or part of the system's observable behaviour, but not both. For a piece of code to be part of the system's observable behaviour, it must expose an operation or state that helps the client achieve one of its goals. Exposing implementation details usually goes hand in hand with invariant violations.
+```typescript
+class User {
+  private name: string;
+  public setName(name): string { this.name = name; } // allows client to bypass the invariant
+  public normaliseName(name: string) { // this is an implementation detail
+    return name.trim().substring(0, 50); // invariant
+  }
+}
+
+// usage
+class UserService {
+  public renameUser(id: number, newName: string) {
+    const user = await this.repo.find(id);
+    const username = user.normaliseName(newName);
+    user.setName(username);
+    await this.repo.save(user);
+  }
+}
+
+// Better Example
+class User {
+  private name: string;
+  public setName(name) {
+    this.name = normaliseName(name);
+  }
+  private normaliseName(name: string) { // now private!
+    return name.trim().substring(0, 50);
+  }
+}
+```
+
+### Testing
+* Prefer business language over technical language - e.g. instead of `isDeliveryValid returns false with invalid date`, use `rejects deliveries scheduled in the past`
+* The principle above applies to UI tests too, but describe the user-visible behaviour - avoid implementation details - e.g. instead of `confirmation popup is displayed when delete button clicked`, use `asks for confirmation before deleting an item`
+* More than one line in the act section is a sign of a problem with the SUT's API.
+* Use the humble object pattern to test difficult-to-test program elements - e.g. move business logic outside of UI, outside of infrastructure, etc.
+* Managed dependencies are out-of-process dependencies that are only accessible through your application (e.g. DB, microservice, queues); unmanaged dependencies are dependencies that other applications have access to (Stripe, weather API's). Use real instances of managed dependencies in **integration** tests, and mocks for unmanaged dependencies.
 
 
 #### Resources
 * Clean Code
 * Code Complete
+* Unit Testing
