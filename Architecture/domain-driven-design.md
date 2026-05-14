@@ -59,7 +59,7 @@
         public removeArticleFromCart(cartId, articleId);
     }
     ```
-* Services don't just beong in the domain layer:
+* Services don't just belong in the domain layer:
 ```typescript
 /*
 E.g. Funds transfer operations for a bank
