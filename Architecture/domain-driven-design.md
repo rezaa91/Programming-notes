@@ -90,6 +90,7 @@ Infrastructure Layer (answers "How do we technically interact with external syst
 * An aggregate is a consistency boundary, implemented by a root enttiy that controls all changes inside that boundary.
 * You can only change some group of data through the aggregate root.
 * A solo entity by itself is classed as an aggregate.
+
 ---
 
 ## Domain Events
@@ -132,4 +133,20 @@ class CancelFlightUseCase { // Application
 
 class RefundOnFlightCancelled {} // Handler responding to FlightCancelled event
 class NotifyCustomerOnFlightCancelled {} // Handler responding to FlightCancelled event
+```
+
+---
+
+## Shared Kernel
+* A special type of bounded context that contains code and data shared across multiple bounded contexts within the same domain.
+```typescript
+/*
+src
+  moduleA/
+  moduleB/
+  shared/
+    kernel/
+      BaseEntity.ts
+      DomainEvent.ts
+*/
 ```

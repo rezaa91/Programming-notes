@@ -5,6 +5,8 @@
 * Method names should have verb or verb phrase names like `postPayment`, `deletePage` or `save`.
 * Pick one word for one abstract concept, e.g. `fetch`, `retrieve` and `get` are equivelent, pick one!
 
+---
+
 ### Functions
 * One level of abstraction per function - i.e. don't mix high level business intent with low level implementation detail
 ``` typescript
@@ -32,8 +34,13 @@ const isActive = user.isActive(); // answer a question
 user.deactivate(); // perform an action
 ```
 
+---
+
 ### Classes
-* A class can contain multiple abstraction levels internally, but the public interface should represent a coherent level of abstraction
+* A class can contain multiple abstraction levels internally, but the public interface should represent a coherent level of abstraction.
+* Making methods private isn't the same as hiding information; e.g. having private properties with public getters/setters still exposes information and is the same as if the properties were public.
+
+---
 
 ### Error Handling
 * Distinguish expected vs exceptional erorrs. Not every failure should be an exception. Reserve exceptions for: unexpected, exceptional, infrastructure or invariant-breaking situations
@@ -128,8 +135,9 @@ if (!result.success) {
     error: "Email already exists"
   });
 }
-
 ```
+
+---
 
 ### Modules & Sub-Systems
 * Hide complexity behind simple interfaces
@@ -244,6 +252,42 @@ class User {
 }
 ```
 
+---
+
+### Deep vs Shallow Modules
+* Information leakage occurs when the same knowledge is used in multiple places; such as two different classes that both understand the format of a particular type of file.
+* Backdoor leakage - information can be leaked even if it doesn't appear in a modules interface; such as when a module claims to encapsulate complexity, but users still need insider knowledge of its implementation details to use it correctly.
+```typescript
+// Bad Example
+const parser = new FlightPlanParser();
+const flightPlan = parser.import(xmlFile);
+const attribute = flightPlan.Attribute.value._; // Leaked! Has knowledge of the xml structure (this should be contained in parser)
+
+// Good Example
+interface FlightPlanParser {
+  import(xml: string): Promise<FlightPlan>; // returns flight plan in own structure
+}
+```
+* Ask yourself "How can I reorganise these classes so that this particular piece of knowledge only affects a single class?"
+```typescript
+/*
+parser/
+  index.ts              << only exposes parser and is how other parts of the system should import
+  FlightPlanParser.ts   << Public. Exported in index.ts for consumption
+  XmlTokeniser.ts       << Private. only used within this 'module' i.e. maybe imported in FlightPlanParser
+  XmlNodeMapper.ts      << Private
+*/
+```
+
+---
+
+### Abstraction
+* Avoid exposing internal data structures - e.g. don't return the HTTP response from a method which is getting data from an API.
+* Temporal decomposition refers to organising software around execution order and processing stages rather than arpimd stable responsibilities and encapsulated knowledge. E.g. think of a compiler where you need to call scan, parse, transform in that order in a single class. This leaks implementation details to the caller.
+* Information hiding only makes sense when the information being hidden is not needed outside a module. If the information is needed, then you must not hide it.
+
+---
+
 ### Testing
 * Prefer business language over technical language - e.g. instead of `isDeliveryValid returns false with invalid date`, use `rejects deliveries scheduled in the past`
 * The principle above applies to UI tests too, but describe the user-visible behaviour - avoid implementation details - e.g. instead of `confirmation popup is displayed when delete button clicked`, use `asks for confirmation before deleting an item`
@@ -251,6 +295,7 @@ class User {
 * Use the humble object pattern to test difficult-to-test program elements - e.g. move business logic outside of UI, outside of infrastructure, etc.
 * Managed dependencies are out-of-process dependencies that are only accessible through your application (e.g. DB, microservice, queues); unmanaged dependencies are dependencies that other applications have access to (Stripe, weather API's). Use real instances of managed dependencies in **integration** tests, and mocks for unmanaged dependencies.
 
+---
 
 #### Resources
 * Clean Code
