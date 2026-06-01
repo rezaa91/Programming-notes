@@ -136,6 +136,12 @@ if (!result.success) {
   });
 }
 ```
+* Reduce the number of places where exceptions must be handled
+* Classes with lots of exceptions habe complex interfaces
+* Generating exceptions just punts the problem to the calling code. Only throw if a higher layer has a clearer responsibility for handling it
+* Exceptions are best for "the abstraction cannot fulfil its contract" e.g. a parser cannot parse, a repository cannot persist, ...
+* Infrastructure should translate low-level errors into meaningul, stable, application level errors - e.g. raw axios 404 could result in "UserNotFoundError"
+* Techniques for recovery - retries (e.g. for network glitches, timeouts, 5xx errors, rate limits), return partial data or last cached data, undo operations, push to sqs (worker + DLQ) for retry later, use default values, skip error and continue
 
 ---
 
@@ -278,6 +284,7 @@ parser/
   XmlNodeMapper.ts      << Private
 */
 ```
+* Keep code that is related together (not necessarily the same file) - i.e. they share information, they are used together (bi-directionally), they overlap conceptually (in that a simple higher level category that includes both pieces of code), it is hard to understand one of the pieces of code without looking at the other.
 
 ---
 
